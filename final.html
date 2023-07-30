@@ -1,0 +1,645 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Index Line Chart</title>
+    <!-- Include D3 library -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <!-- Load d3-annotation -->
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+
+
+    <style>
+        /* Flexbox styling for the container */
+        #chart-container {
+            display: flex;
+            align-items: flex-start; /* Align items at the top of the container */
+        }
+
+        /* Adjust the size of the chart */
+
+        /* Style the text section */
+        #overview-container {
+            flex: 1;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center-align the content vertically */
+        }
+
+        #overview-title {
+            font-size: 30px;
+            text-align: center; /* Center-align the title */
+        }
+
+        #overview-paragraph {
+            font-size: 20px;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="chart-container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
+        <svg id="chart"></svg>
+        <div style="margin-top: 10px;">
+            <button onclick="zoomIn2007()">Global Financial Crisis</button>
+            <button onclick="zoomIn2012()">Quatitative Easing by Federal Reserve</button>
+            <button onclick="zoomIn2020()">COVID Meltdown and Recovery</button>
+            <button onclick="resetZoom()">Overview</button>
+            
+        </div>
+
+         <div style="flex: 1; padding-left: 20px;">
+            <h3 id="overview-title">Overview</h3>
+            <ul id="overview-paragraph">
+                <li>During 2007 to mid 2023, the average rental cost in NYC increased by <span style="font-weight: bold; color: red;">55%</span>.</li>
+                <li>Despite two major economic shocks: global financial crisis and COVID-19 Meltdown, the NYC rental cost <span style="font-weight: bold; color: red;">showed resilience</span> and <span style="font-weight: bold; color: red;">maintained steady growth</span>.</li>
+                <li>Following the initial drawdown, the rental cost <span style="font-weight: bold; color: red;">always come back with more increases</span> after each crisis.</li>
+                <li>Click each button above to see more detail.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        // Set up chart dimensions
+        const width = 1500; // Larger width
+        const height = 800; // Larger height
+        const margin = { top: 50, right: 50, bottom: 70, left: 80 };
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+
+        // Create SVG container
+        const svg = d3.select("#chart")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // Define scales
+        const xScale = d3.scaleTime()
+            .range([0, chartWidth]);
+
+        const yScale = d3.scaleLinear()
+            .range([chartHeight, 0]);
+
+        // Define line generator
+        const line = d3.line()
+            .x(d => xScale(d.date))
+            .y(d => yScale(d.rentIndex));
+
+        // Define the data as a constant
+        const data = [
+            { date: new Date("2007-01-01"), rentIndex: 2202 },
+            { date: new Date("2007-02-01"), rentIndex: 2161 },
+            { date: new Date("2007-03-01"), rentIndex: 2177 },
+            { date: new Date("2007-04-01"), rentIndex: 2193 },
+            { date: new Date("2007-05-01"), rentIndex: 2217 },
+            { date: new Date("2007-06-01"), rentIndex: 2235 },
+            { date: new Date("2007-07-01"), rentIndex: 2269 },
+            { date: new Date("2007-08-01"), rentIndex: 2296 },
+            { date: new Date("2007-09-01"), rentIndex: 2314 },
+            { date: new Date("2007-10-01"), rentIndex: 2326 },
+            { date: new Date("2007-11-01"), rentIndex: 2340 },
+            { date: new Date("2007-12-01"), rentIndex: 2347 },
+            { date: new Date("2008-01-01"), rentIndex: 2347 },
+            { date: new Date("2008-02-01"), rentIndex: 2350 },
+            { date: new Date("2008-03-01"), rentIndex: 2357 },
+            { date: new Date("2008-04-01"), rentIndex: 2357 },
+            { date: new Date("2008-05-01"), rentIndex: 2356 },
+            { date: new Date("2008-06-01"), rentIndex: 2357 },
+            { date: new Date("2008-07-01"), rentIndex: 2360 },
+            { date: new Date("2008-08-01"), rentIndex: 2362 },
+            { date: new Date("2008-09-01"), rentIndex: 2352 },
+            { date: new Date("2008-10-01"), rentIndex: 2328 },
+            { date: new Date("2008-11-01"), rentIndex: 2303 },
+            { date: new Date("2008-12-01"), rentIndex: 2272 },
+            { date: new Date("2009-01-01"), rentIndex: 2241 },
+            { date: new Date("2009-02-01"), rentIndex: 2212 },
+            { date: new Date("2009-03-01"), rentIndex: 2190 },
+            { date: new Date("2009-04-01"), rentIndex: 2169 },
+            { date: new Date("2009-05-01"), rentIndex: 2154 },
+            { date: new Date("2009-06-01"), rentIndex: 2146 },
+            { date: new Date("2009-07-01"), rentIndex: 2146 },
+            { date: new Date("2009-08-01"), rentIndex: 2142 },
+            { date: new Date("2009-09-01"), rentIndex: 2142 },
+            { date: new Date("2009-10-01"), rentIndex: 2137 },
+            { date: new Date("2009-11-01"), rentIndex: 2126 },
+            { date: new Date("2009-12-01"), rentIndex: 2119 },
+            { date: new Date("2010-01-01"), rentIndex: 2122 },
+            { date: new Date("2010-02-01"), rentIndex: 2126 },
+            { date: new Date("2010-03-01"), rentIndex: 2129 },
+            { date: new Date("2010-04-01"), rentIndex: 2135 },
+            { date: new Date("2010-05-01"), rentIndex: 2146 },
+            { date: new Date("2010-06-01"), rentIndex: 2160 },
+            { date: new Date("2010-07-01"), rentIndex: 2174 },
+            { date: new Date("2010-08-01"), rentIndex: 2187 },
+            { date: new Date("2010-09-01"), rentIndex: 2201 },
+            { date: new Date("2010-10-01"), rentIndex: 2210 },
+            { date: new Date("2010-11-01"), rentIndex: 2214 },
+            { date: new Date("2010-12-01"), rentIndex: 2222 },
+            { date: new Date("2011-01-01"), rentIndex: 2232 },
+            { date: new Date("2011-02-01"), rentIndex: 2242 },
+            { date: new Date("2011-03-01"), rentIndex: 2253 },
+            { date: new Date("2011-04-01"), rentIndex: 2268 },
+            { date: new Date("2011-05-01"), rentIndex: 2281 },
+            { date: new Date("2011-06-01"), rentIndex: 2296 },
+            { date: new Date("2011-07-01"), rentIndex: 2312 },
+            { date: new Date("2011-08-01"), rentIndex: 2327 },
+            { date: new Date("2011-09-01"), rentIndex: 2339 },
+            { date: new Date("2011-10-01"), rentIndex: 2352 },
+            { date: new Date("2011-11-01"), rentIndex: 2356 },
+            { date: new Date("2011-12-01"), rentIndex: 2359 },
+            { date: new Date("2012-01-01"), rentIndex: 2366 },
+            { date: new Date("2012-02-01"), rentIndex: 2373 },
+            { date: new Date("2012-03-01"), rentIndex: 2384 },
+            { date: new Date("2012-04-01"), rentIndex: 2397 },
+            { date: new Date("2012-05-01"), rentIndex: 2412 },
+            { date: new Date("2012-06-01"), rentIndex: 2423 },
+            { date: new Date("2012-07-01"), rentIndex: 2437 },
+            { date: new Date("2012-08-01"), rentIndex: 2449 },
+            { date: new Date("2012-09-01"), rentIndex: 2458 },
+            { date: new Date("2012-10-01"), rentIndex: 2463 },
+            { date: new Date("2012-11-01"), rentIndex: 2470 },
+            { date: new Date("2012-12-01"), rentIndex: 2472 },
+            { date: new Date("2013-01-01"), rentIndex: 2474 },
+            { date: new Date("2013-02-01"), rentIndex: 2483 },
+            { date: new Date("2013-03-01"), rentIndex: 2489 },
+            { date: new Date("2013-04-01"), rentIndex: 2497 },
+            { date: new Date("2013-05-01"), rentIndex: 2512 },
+            { date: new Date("2013-06-01"), rentIndex: 2524 },
+            { date: new Date("2013-07-01"), rentIndex: 2536 },
+            { date: new Date("2013-08-01"), rentIndex: 2547 },
+            { date: new Date("2013-09-01"), rentIndex: 2555 },
+            { date: new Date("2013-10-01"), rentIndex: 2559 },
+            { date: new Date("2013-11-01"), rentIndex: 2558 },
+            { date: new Date("2013-12-01"), rentIndex: 2553 },
+            { date: new Date("2014-01-01"), rentIndex: 2555 },
+            { date: new Date("2014-02-01"), rentIndex: 2559 },
+            { date: new Date("2014-03-01"), rentIndex: 2564 },
+            { date: new Date("2014-04-01"), rentIndex: 2577 },
+            { date: new Date("2014-05-01"), rentIndex: 2594 },
+            { date: new Date("2014-06-01"), rentIndex: 2606 },
+            { date: new Date("2014-07-01"), rentIndex: 2618 },
+            { date: new Date("2014-08-01"), rentIndex: 2632 },
+            { date: new Date("2014-09-01"), rentIndex: 2639 },
+            { date: new Date("2014-10-01"), rentIndex: 2642 },
+            { date: new Date("2014-11-01"), rentIndex: 2642 },
+            { date: new Date("2014-12-01"), rentIndex: 2643 },
+            { date: new Date("2015-01-01"), rentIndex: 2648 },
+            { date: new Date("2015-02-01"), rentIndex: 2657 },
+            { date: new Date("2015-03-01"), rentIndex: 2667 },
+            { date: new Date("2015-04-01"), rentIndex: 2679 },
+            { date: new Date("2015-05-01"), rentIndex: 2696 },
+            { date: new Date("2015-06-01"), rentIndex: 2711 },
+            { date: new Date("2015-07-01"), rentIndex: 2725 },
+            { date: new Date("2015-08-01"), rentIndex: 2737 },
+            { date: new Date("2015-09-01"), rentIndex: 2745 },
+            { date: new Date("2015-10-01"), rentIndex: 2745 },
+            { date: new Date("2015-11-01"), rentIndex: 2742 },
+            { date: new Date("2015-12-01"), rentIndex: 2739 },
+            { date: new Date("2016-01-01"), rentIndex: 2739 },
+            { date: new Date("2016-02-01"), rentIndex: 2739 },
+            { date: new Date("2016-03-01"), rentIndex: 2745 },
+            { date: new Date("2016-04-01"), rentIndex: 2753 },
+            { date: new Date("2016-05-01"), rentIndex: 2765 },
+            { date: new Date("2016-06-01"), rentIndex: 2775 },
+            { date: new Date("2016-07-01"), rentIndex: 2783 },
+            { date: new Date("2016-08-01"), rentIndex: 2789 },
+            { date: new Date("2016-09-01"), rentIndex: 2790 },
+            { date: new Date("2016-10-01"), rentIndex: 2784 },
+            { date: new Date("2016-11-01"), rentIndex: 2775 },
+            { date: new Date("2016-12-01"), rentIndex: 2766 },
+            { date: new Date("2017-01-01"), rentIndex: 2760 },
+            { date: new Date("2017-02-01"), rentIndex: 2758 },
+            { date: new Date("2017-03-01"), rentIndex: 2758 },
+            { date: new Date("2017-04-01"), rentIndex: 2765 },
+            { date: new Date("2017-05-01"), rentIndex: 2774 },
+            { date: new Date("2017-06-01"), rentIndex: 2784 },
+            { date: new Date("2017-07-01"), rentIndex: 2793 },
+            { date: new Date("2017-08-01"), rentIndex: 2800 },
+            { date: new Date("2017-09-01"), rentIndex: 2800 },
+            { date: new Date("2017-10-01"), rentIndex: 2792 },
+            { date: new Date("2017-11-01"), rentIndex: 2780 },
+            { date: new Date("2017-12-01"), rentIndex: 2771 },
+            { date: new Date("2018-01-01"), rentIndex: 2766 },
+            { date: new Date("2018-02-01"), rentIndex: 2767 },
+            { date: new Date("2018-03-01"), rentIndex: 2772 },
+            { date: new Date("2018-04-01"), rentIndex: 2782 },
+            { date: new Date("2018-05-01"), rentIndex: 2796 },
+            { date: new Date("2018-06-01"), rentIndex: 2810 },
+            { date: new Date("2018-07-01"), rentIndex: 2823 },
+            { date: new Date("2018-08-01"), rentIndex: 2836 },
+            { date: new Date("2018-09-01"), rentIndex: 2842 },
+            { date: new Date("2018-10-01"), rentIndex: 2839 },
+            { date: new Date("2018-11-01"), rentIndex: 2833 },
+            { date: new Date("2018-12-01"), rentIndex: 2826 },
+            { date: new Date("2019-01-01"), rentIndex: 2823 },
+            { date: new Date("2019-02-01"), rentIndex: 2826 },
+            { date: new Date("2019-03-01"), rentIndex: 2836 },
+            { date: new Date("2019-04-01"), rentIndex: 2848 },
+            { date: new Date("2019-05-01"), rentIndex: 2866 },
+            { date: new Date("2019-06-01"), rentIndex: 2882 },
+            { date: new Date("2019-07-01"), rentIndex: 2897 },
+            { date: new Date("2019-08-01"), rentIndex: 2912 },
+            { date: new Date("2019-09-01"), rentIndex: 2920 },
+            { date: new Date("2019-10-01"), rentIndex: 2920 },
+            { date: new Date("2019-11-01"), rentIndex: 2918 },
+            { date: new Date("2019-12-01"), rentIndex: 2914 },
+            { date: new Date("2020-01-01"), rentIndex: 2914 },
+            { date: new Date("2020-02-01"), rentIndex: 2916 },
+            { date: new Date("2020-03-01"), rentIndex: 2914 },
+            { date: new Date("2020-04-01"), rentIndex: 2902 },
+            { date: new Date("2020-05-01"), rentIndex: 2877 },
+            { date: new Date("2020-06-01"), rentIndex: 2849 },
+            { date: new Date("2020-07-01"), rentIndex: 2815 },
+            { date: new Date("2020-08-01"), rentIndex: 2770 },
+            { date: new Date("2020-09-01"), rentIndex: 2719 },
+            { date: new Date("2020-10-01"), rentIndex: 2662 },
+            { date: new Date("2020-11-01"), rentIndex: 2611 },
+            { date: new Date("2020-12-01"), rentIndex: 2568 },
+            { date: new Date("2021-01-01"), rentIndex: 2531 },
+            { date: new Date("2021-02-01"), rentIndex: 2508 },
+            { date: new Date("2021-03-01"), rentIndex: 2499 },
+            { date: new Date("2021-04-01"), rentIndex: 2508 },
+            { date: new Date("2021-05-01"), rentIndex: 2535 },
+            { date: new Date("2021-06-01"), rentIndex: 2582 },
+            { date: new Date("2021-07-01"), rentIndex: 2642 },
+            { date: new Date("2021-08-01"), rentIndex: 2710 },
+            { date: new Date("2021-09-01"), rentIndex: 2775 },
+            { date: new Date("2021-10-01"), rentIndex: 2833 },
+            { date: new Date("2021-11-01"), rentIndex: 2884 },
+            { date: new Date("2021-12-01"), rentIndex: 2928 },
+            { date: new Date("2022-01-01"), rentIndex: 2974 },
+            { date: new Date("2022-02-01"), rentIndex: 3019 },
+            { date: new Date("2022-03-01"), rentIndex: 3064 },
+            { date: new Date("2022-04-01"), rentIndex: 3113 },
+            { date: new Date("2022-05-01"), rentIndex: 3168 },
+            { date: new Date("2022-06-01"), rentIndex: 3224 },
+            { date: new Date("2022-07-01"), rentIndex: 3269 },
+            { date: new Date("2022-08-01"), rentIndex: 3308 },
+            { date: new Date("2022-09-01"), rentIndex: 3335 },
+            { date: new Date("2022-10-01"), rentIndex: 3341 },
+            { date: new Date("2022-11-01"), rentIndex: 3332 },
+            { date: new Date("2022-12-01"), rentIndex: 3320 },
+            { date: new Date("2023-01-01"), rentIndex: 3320 },
+            { date: new Date("2023-02-01"), rentIndex: 3326 },
+            { date: new Date("2023-03-01"), rentIndex: 3337 },
+            { date: new Date("2023-04-01"), rentIndex: 3361 },
+            { date: new Date("2023-05-01"), rentIndex: 3387 },
+            { date: new Date("2023-06-01"), rentIndex: 3418 }
+        ];
+
+        // Set initial domains for scales
+        xScale.domain(d3.extent(data, d => d.date));
+        yScale.domain([d3.min(data, d => d.rentIndex), d3.max(data, d => d.rentIndex)]).nice();
+
+        // Draw title
+        svg.append("text")
+            .attr("x", chartWidth / 2)
+            .attr("y", -margin.top / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", "30px")
+            .text("New York City Rental Index (Jan 2007 - Jun 2023)");
+
+        // Draw line
+        svg.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 2)
+            .attr("d", line);
+
+        // Draw x-axis
+        svg.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0, ${chartHeight})`)
+            .call(d3.axisBottom(xScale).tickSizeOuter(0).tickPadding(10).tickFormat(d3.timeFormat("%b %Y")))
+            .selectAll("text")
+            .style("font-size", "14px");
+
+        // Draw y-axis
+        svg.append("g")
+            .attr("class", "y-axis")
+            .call(d3.axisLeft(yScale).tickSize(-chartWidth).tickPadding(10))
+            .selectAll("text")
+            .style("font-size", "14px");
+
+
+
+        // Zoom In function (Jan 2007 - Dec 2011)
+        function zoomIn2007() {
+            const startDate = new Date("2007-01-01");
+            const endDate = new Date("2011-12-01");
+
+            // Filter data within the specified date range
+            const filteredData = data.filter(d => d.date >= startDate && d.date <= endDate);
+
+            // Update x-axis domain
+            xScale.domain([startDate, endDate]);
+            svg.select(".x-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0).tickPadding(10).tickFormat(d3.timeFormat("%b %Y")))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Update y-axis domain based on filtered data
+            yScale.domain([d3.min(filteredData, d => d.rentIndex), d3.max(filteredData, d => d.rentIndex)]).nice();
+            svg.select(".y-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisLeft(yScale).tickSize(-chartWidth).tickPadding(10))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Redraw line chart
+            svg.select(".line")
+                .datum(filteredData)
+                .transition()
+                .duration(1000)
+                .attr("d", line);
+
+            // Update the overview title and paragraph
+            d3.select("#overview-title").text("Rental Market During GFC");
+
+            d3.select("#overview-paragraph").html(
+            `<ul id="overview-bullets">
+                <li>The rental cost in NYC peaked in <span style="font-weight: bold; color: red;"> Aug 2008</span>.</li>
+                <li>Followed by the Bankruptcy of Lehman Brothers in Sep 2008, the rental cost started to decrease in the city. The market bottomed in <span style="font-weight: bold; color: red;"> Dec 2009</span>, with a <span style="font-weight: bold; color: red;"> 10.2% drawdown</span>.</li>
+                <li>The rental market in NYC started to recover after the easy money policy from the FED, and fully recovered to its previous peak in <span style="font-weight: bold; color: red;"> Apr 2011</span>.</li>
+            </ul>`
+            );
+
+            // Remove the annotation
+            svg.selectAll(".annotation-group").remove();
+
+            // add annotations
+            const annotations = [{
+                                  note: {
+                                            label: "Bankruptcy of Lehman Brothers",
+                                            bgPadding: 20,
+                                            title: "Sep 2008"
+                                        },
+                                  data: {date: "2008-09-01", rentIndex: 2352},
+                                  x: 442,
+                                  y: 42,
+                                  dy: 10,
+                                  dx: 50,
+                                  color: ["#FF0000"]
+                                  },
+                                  
+                                  {
+                                  note: {
+                                            label: "Rental Market Bottomed at 2119",
+                                            bgPadding: 20,
+                                            title: "Dec 2009"
+                                        },
+                                  data: {date: "2009-10-01", rentIndex: 1000},
+                                  x: 815,
+                                  y: 636,
+                                  dy: -100,
+                                  dx: 20,
+                                  color: ["#FF0000"]
+                                  }
+
+                                ]
+
+            const makeAnnotations = d3.annotation()
+                .annotations(annotations)
+
+            svg.append("g")
+               .attr("class", "annotation-group")
+               .call(makeAnnotations)
+            
+        }
+
+
+        // Zoom In function (Jan 2012 - Dec 2019)
+        function zoomIn2012() {
+            const startDate = new Date("2012-01-01");
+            const endDate = new Date("2019-12-01");
+
+            // Filter data within the specified date range
+            const filteredData = data.filter(d => d.date >= startDate && d.date <= endDate);
+
+            // Update x-axis domain
+            xScale.domain([startDate, endDate]);
+            svg.select(".x-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0).tickPadding(10).tickFormat(d3.timeFormat("%b %Y")))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Update y-axis domain based on filtered data
+            yScale.domain([d3.min(filteredData, d => d.rentIndex), d3.max(filteredData, d => d.rentIndex)]).nice();
+            svg.select(".y-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisLeft(yScale).tickSize(-chartWidth).tickPadding(10))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Redraw line chart
+            svg.select(".line")
+                .datum(filteredData)
+                .transition()
+                .duration(1000)
+                .attr("d", line);
+
+            // Update the overview title and paragraph
+            d3.select("#overview-title").text("Years of Quantitative Easing");
+
+            d3.select("#overview-paragraph").html(
+            `<ul id="overview-bullets">
+                <li>The NYC rental market kept a <span style="font-weight: bold; color: red;">steady growth</span> during 2012 - 2019. </li>
+                <li>Due to the Federal Reserve's three rounds of quantitative easing, and ultra low interest rate, the rental cost in    NYC increased by <span style="font-weight: bold; color: red;">23.53%</span>.</li>
+                <li>The average growth rate for during these 8 years was <span style="font-weight: bold; color: red;">2.69%</span>.</li>
+            </ul>`
+            );
+
+            // Remove the annotation
+            svg.selectAll(".annotation-group").remove();
+
+            // add annotations
+            const annotations = [{
+                                  note: {
+                                            label: "FED Finished QE-3",
+                                            bgPadding: 20,
+                                            title: "Oct 2014"
+                                        },
+                                  data: {date: "2014-10-01", rentIndex: 2352},
+                                  x: 442,
+                                  y: 363,
+                                  dy: 10,
+                                  dx: 50,
+                                  color: ["#FF0000"]
+                                  },
+                                  
+                                  {
+                                  note: {
+                                            label: "FED Banlance Sheet Normalization",
+                                            bgPadding: 20,
+                                            title: "Mar 2019"
+                                        },
+                                  data: {date: "2019-03-01", rentIndex: 1000},
+                                  x: 1230,
+                                  y: 140,
+                                  dy: 30,
+                                  dx: 10,
+                                  color: ["#FF0000"]
+                                  }
+
+                                ]
+
+            const makeAnnotations = d3.annotation()
+                .annotations(annotations)
+
+            svg.append("g")
+               .attr("class", "annotation-group")
+               .call(makeAnnotations)
+            
+        }
+
+        // Zoom In function (Jan 2020 - Jun 2023)
+        function zoomIn2020() {
+            const startDate = new Date("2020-01-01");
+            const endDate = new Date("2023-06-01");
+
+            // Filter data within the specified date range
+            const filteredData = data.filter(d => d.date >= startDate && d.date <= endDate);
+
+            // Update x-axis domain
+            xScale.domain([startDate, endDate]);
+            svg.select(".x-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0).tickPadding(10).tickFormat(d3.timeFormat("%b %Y")))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Update y-axis domain based on filtered data
+            yScale.domain([d3.min(filteredData, d => d.rentIndex), d3.max(filteredData, d => d.rentIndex)]).nice();
+            svg.select(".y-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisLeft(yScale).tickSize(-chartWidth).tickPadding(10))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Redraw line chart
+            svg.select(".line")
+                .datum(filteredData)
+                .transition()
+                .duration(1000)
+                .attr("d", line);
+
+            // Update the overview title and paragraph
+            d3.select("#overview-title").text("COVID-19 Meltdown and Recovery");
+
+            d3.select("#overview-paragraph").html(
+            `<ul id="overview-bullets">
+                <li>The COVID-19 crisis burst out in the US in <span style="font-weight: bold; color: red;">March 2023</span>.</li>
+                <li>After reached its peak in <span style="font-weight: bold; color: red;">Oct 2019</span>, the rental cost dropped<span style="font-weight: bold; color: red;"> 14.41%</span> during the COVID-19 meltdown, and bottomed in <span style="font-weight: bold; color: red;">March 2021</span>.</li>
+                <li>The rental cost recovered to its previous levels and kept increasing due to the inflation caused by Federal Reserve's policies.</li>
+            </ul>`
+            );
+
+            // Remove the annotation
+            svg.selectAll(".annotation-group").remove();
+
+            // add annotations
+            const annotations = [{
+                                  note: {
+                                            label: "First Covid-19 Case Confirmed in NYC",
+                                            bgPadding: 20,
+                                            title: "Mar 2020"
+                                        },
+                                  data: {date: "2014-10-01", rentIndex: 2352},
+                                  x: 70,
+                                  y: 363,
+                                  dy: -30,
+                                  dx: 50,
+                                  color: ["#FF0000"]
+                                  },
+                                  
+                                  {
+                                  note: {
+                                            label: "NYC Residents Started to Get Vaccined",
+                                            bgPadding: 20,
+                                            title: "Dec 2020"
+                                        },
+                                  data: {date: "2019-03-01", rentIndex: 1000},
+                                  x: 354,
+                                  y: 560,
+                                  dy: -30,
+                                  dx: 50,
+                                  color: ["#FF0000"]
+                                  }
+
+                                ]
+
+            const makeAnnotations = d3.annotation()
+                .annotations(annotations)
+
+            svg.append("g")
+               .attr("class", "annotation-group")
+               .call(makeAnnotations)
+            
+        }
+
+
+
+        // Reset Zoom function (Original date range)
+        function resetZoom() {
+            const startDate = new Date("2007-01-01");
+            const endDate = new Date("2023-06-01");
+
+            // Set initial domains for scales based on complete dataset
+            xScale.domain(d3.extent(data, d => d.date));
+            yScale.domain([d3.min(data, d => d.rentIndex), d3.max(data, d => d.rentIndex)]).nice();
+
+            // Update x-axis domain and redraw x-axis
+            svg.select(".x-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisBottom(xScale).tickSizeOuter(0).tickPadding(10).tickFormat(d3.timeFormat("%b %Y")))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Update y-axis domain and redraw y-axis
+            svg.select(".y-axis")
+                .transition()
+                .duration(1000)
+                .call(d3.axisLeft(yScale).tickSize(-chartWidth).tickPadding(10))
+                .selectAll("text")
+                .style("font-size", "14px");
+
+            // Redraw line chart with complete dataset
+            svg.select(".line")
+                .datum(data)
+                .transition()
+                .duration(1000)
+                .attr("d", line);
+
+            // Update the overview title and paragraph
+            d3.select("#overview-title").text("Overview");
+
+            d3.select("#overview-paragraph").html(
+            `<ul id="overview-bullets">
+                <li>During 2007 to mid 2023, the average rental cost in NYC increased by <span style="font-weight: bold; color: red;">55%</span>.</li>
+                <li>Despite two major economic shocks: global financial crisis and COVID-19 Meltdown, the NYC rental cost <span style="font-weight: bold; color: red;">showed resilience</span> and <span style="font-weight: bold; color: red;">maintained steady growth</span>.</li>
+                <li>Following the initial drawdown, the rental cost <span style="font-weight: bold; color: red;">always come back with more increases</span> after each crisis.</li>
+            </ul>`
+            );
+            
+
+            // Remove the annotation
+            svg.selectAll(".annotation-group").remove();
+        }
+    </script>
+</body>
+</html>
